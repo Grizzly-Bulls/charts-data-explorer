@@ -1,6 +1,6 @@
 # Charts Data Explorer contributor guidance
 
-This repository is an independent, small reference application for the public Grizzly Bulls Charts API.
+This repository is an independent, small reference application for the public Grizzly Bulls Economic Data API.
 
 ## Core product boundary
 - Treat the published `https://grizzlybulls.com/api/v1/charts/` endpoints as the only source of historical observations, metadata, freshness, rights and revision semantics.
