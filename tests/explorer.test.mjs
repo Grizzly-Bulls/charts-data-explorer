@@ -105,7 +105,8 @@ test('SSR escapes untrusted API metadata; API code and canonical links are exact
   assert.doesNotMatch(p, /<img src=x onerror/);
   assert.match(p, /&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.match(p, /robots" content="noindex,nofollow/);
-  assert.match(p, /Grizzly Bulls Economic Data API/);
+  assert.match(p, /public, approved Economic Data API/);
+  assert.match(renderCatalog([series]).html, /Grizzly Bulls Economic Data API/);
   assert.match(p, /\/charts\/us-real-gdp/);
   assert.match(p, /api\/v1\/charts\/series\/us-real-gdp\/observations\?order=desc&amp;limit=25&amp;offset=0/);
   assert.match(p, /No API key required/);
