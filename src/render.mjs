@@ -21,7 +21,7 @@ function shell({ title, summary, content, status = 200 }) {
 <meta name="robots" content="noindex,nofollow"><meta name="description" content="${e(summary)}">
 <title>${e(title)} · Charts Data Explorer</title><link rel="stylesheet" href="/styles.css"></head>
 <body><div class="shell"><header class="site-header"><a class="brand" href="/" aria-label="Charts Data Explorer home"><span class="mark">GB</span><span>CHARTS <small>DATA EXPLORER</small></span></a><nav><a href="/">Browse series</a><a href="${ORIGIN}/charts/api" target="_blank" rel="noopener noreferrer">API docs</a><a href="${ORIGIN}/charts" target="_blank" rel="noopener noreferrer">Grizzly Bulls Charts</a></nav></header>
-<main>${content}</main><footer class="footer"><span>Open-source reference integration of the public, keyless Charts API.</span><span>Historical source observations, not live market quotes. <a href="${ORIGIN}/charts/api">Data/API notes</a></span></footer></div><script src="/copy.js" defer></script></body></html>`,
+<main>${content}</main><footer class="footer"><span>Open-source reference integration of the public, keyless Economic Data API.</span><span>Historical source observations, not live market quotes. <a href="${ORIGIN}/charts/api">Data/API notes</a></span></footer></div><script src="/copy.js" defer></script></body></html>`,
   };
 }
 
@@ -39,7 +39,7 @@ export function renderCatalog(series) {
     <span>${e(s.latestObservation.date)}</span></div></article>`).join('')}</div></section>`).join('');
   return shell({
     title: 'Explore approved economic series',
-    summary: 'Explore source-backed historical datasets from the public Grizzly Bulls Charts API.',
+    summary: 'Explore source-backed historical datasets from the public Grizzly Bulls Economic Data API.',
     content: `<div class="hero"><div class="eyebrow">GRIZZLY BULLS · OPEN API EXPLORER</div><h1>Reliable economic data.<br><em>One request away.</em></h1>
     <p>Browse every series in the approved machine-readable catalog, inspect its history, and copy the exact request behind the visualization. No API key needed.</p>
     <div class="hero-actions"><a class="button primary" href="${ORIGIN}/charts/api">Read API documentation</a><a class="button" href="${ORIGIN}/api/v1/charts/series">View raw JSON catalog</a></div></div>
@@ -135,7 +135,7 @@ export function renderSeries(data, query) {
     <div class="cols"><section class="panel" aria-labelledby="table"><div class="section-head"><h2 id="table">Exact observations</h2><span>${rows.length.toLocaleString('en-US')} of ${pagination.total.toLocaleString('en-US')} matching</span></div>
     <div class="table-wrap"><table><caption>API values and canonical missing-period flags</caption><thead><tr><th scope="col">Period</th><th scope="col">Value (${e(series.unitLabel)})</th><th scope="col">Gap before</th></tr></thead><tbody>${rows.map(row => `<tr><td>${e(row.date)}</td><td>${valueFormat(series, row.value)}</td><td>${row.gapBefore ? 'Yes' : 'No'}</td></tr>`).join('') || '<tr><td colspan="3">No observations found</td></tr>'}</tbody></table></div>
     <div class="pager">${prevLink ? `<a class="button" href="${e(prevLink)}">← Previous</a>` : '<span></span>'}<span>Offset ${query.offset.toLocaleString('en-US')}</span>${nextLink ? `<a class="button" href="${e(nextLink)}">Next →</a>` : '<span></span>'}</div></section>
-    <section class="panel" aria-labelledby="api"><div class="section-head"><h2 id="api">Make this API request</h2><span>No API key required</span></div><p>Reproduce the exact data shown here. The URL and query use the public, approved Charts API.</p>
+    <section class="panel" aria-labelledby="api"><div class="section-head"><h2 id="api">Make this API request</h2><span>No API key required</span></div><p>Reproduce the exact data shown here. The URL and query use the public, approved Economic Data API.</p>
     <div class="code-wrap"><pre id="example-request"><code>${e(curl)}</code></pre><button class="button" type="button" data-copy="example-request">Copy</button></div>
     <div class="button-row"><a class="button" href="${e(apiUrl)}" target="_blank" rel="noopener noreferrer">View JSON ↗</a><a class="button" href="${ORIGIN}/api/v1/charts/openapi" target="_blank" rel="noopener noreferrer">OpenAPI schema ↗</a></div>
     <dl class="source-dl"><dt>Original publisher</dt><dd>${e(series.source.name)}</dd><dt>Dataset</dt><dd>${e(series.source.dataset)}</dd><dt>Source</dt><dd><a href="${e(series.source.url)}" target="_blank" rel="noopener noreferrer">Publisher source ↗</a></dd>
@@ -146,7 +146,7 @@ export function renderSeries(data, query) {
 }
 
 export function renderError(error, status = 502) {
-  return shell({ title: 'Charts API unavailable', summary: 'The Charts API request could not be completed.', status,
+  return shell({ title: 'Economic Data API unavailable', summary: 'The Economic Data API request could not be completed.', status,
     content: `<div class="hero error"><div class="eyebrow">DATA ACCESS</div><h1>Couldn't load this request.</h1><p>${e(error)}</p>
     <div class="hero-actions"><a class="button primary" href="/">Back to catalog</a><a class="button" href="${ORIGIN}/charts/api">API documentation</a></div></div>` });
 }
