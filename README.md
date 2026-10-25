@@ -18,7 +18,7 @@ npm start
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000). There are **no dependencies to install**. The application uses Node's built-in HTTP server and `fetch`.
 
-> Publication note: the GitHub repository and optional hosted demo must be created and verified before sharing those links. Until publication, run directly from the release/source archive.
+> The source repository is public and ready to clone. There is no separately hosted Charts Data Explorer yet; run this application locally to try the keyless public API.
 
 ## What the explorer demonstrates
 
