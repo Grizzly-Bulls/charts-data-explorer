@@ -78,6 +78,16 @@ https://grizzlybulls.com (public, keyless API)
 - The application binds to loopback by default and should be placed behind a separately configured reverse proxy if hosted. A proxy funnels visitors through one socket peer; operators should design their own IP normalization, abuse protection and centralized limits before inviting significant public traffic.
 - `/health` reports **only this example server's readiness**. It does not assert upstream API availability.
 
+## Optional Python integration example
+
+For teams using an existing FRED-backed dashboard, see the [Python macro dashboard adapter](examples/python/README.md). The standalone, standard-library-only module maps **three reviewed overlapping series** to FRED-shaped `date`/`value` observations, with explicit payroll-unit and period-date conversions; CPI and unrelated FRED sources are **not** substituted. The example retains FRED as the fallback on nonmatching or unavailable data.
+
+```bash
+python3 -m unittest discover -s examples/python -p 'test_*.py' -v
+```
+
+Python 3.10+ is required **only** for this optional example. The Node explorer remains dependency-free; `npm run check` still validates the Node application separately. This does not modify or imply endorsement by another dashboard project.
+
 ## Developer workflow
 
 ```bash
