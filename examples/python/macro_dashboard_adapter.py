@@ -13,6 +13,8 @@ from __future__ import annotations
 import calendar
 import json
 import math
+import socket
+import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -51,16 +53,42 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 def _read_public_json(url: str) -> Any:
     """A single bounded GET to the fixed public origin; no redirect or secrets."""
-    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/json",
+            # Identify this example transparently instead of using urllib's
+            # generic default user agent. Never impersonate a browser.
+            "User-Agent": "GrizzlyBullsChartsExplorer-PythonExample/0.1",
+        },
+    )
     try:
         with urllib.request.build_opener(_NoRedirect).open(request, timeout=8) as response:
             if response.status != 200:
-                raise ChartsAdapterError("Charts API returned a non-200 response")
+                raise ChartsAdapterError(f"Charts API returned HTTP {response.status}")
             if response.headers.get_content_type() != "application/json":
                 raise ChartsAdapterError("Charts API returned non-JSON content")
             raw = response.read(MAX_RESPONSE_BYTES + 1)
-    except (urllib.error.URLError, TimeoutError, OSError) as exc:
-        raise ChartsAdapterError("Charts API request failed") from exc
+    except urllib.error.HTTPError as exc:
+        # HTTPError inherits URLError; keep status visible to distinguish
+        # a Cloudflare/WAF response from DNS, TLS, or a broken network.
+        raise ChartsAdapterError(f"Charts API returned HTTP {exc.code}") from exc
+    except urllib.error.URLError as exc:
+        reason = exc.reason
+        if isinstance(reason, socket.gaierror):
+            category = "DNS"
+        elif isinstance(reason, ssl.SSLError):
+            category = "TLS"
+        elif isinstance(reason, TimeoutError):
+            category = "timeout"
+        else:
+            category = type(reason).__name__
+        # No raw error strings: they may contain local proxy configuration.
+        raise ChartsAdapterError(f"Charts API network error ({category})") from exc
+    except TimeoutError as exc:
+        raise ChartsAdapterError("Charts API network error (timeout)") from exc
+    except OSError as exc:
+        raise ChartsAdapterError(f"Charts API network error ({type(exc).__name__})") from exc
     if len(raw) > MAX_RESPONSE_BYTES:
         raise ChartsAdapterError("Charts API response exceeded byte limit")
     try:
