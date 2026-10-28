@@ -1,6 +1,9 @@
 """Synthetic, network-free regression checks for the optional FRED-shaped adapter."""
 
 import importlib.util
+import socket
+import ssl
+import urllib.error
 from pathlib import Path
 from unittest import TestCase, main
 from unittest.mock import patch
@@ -114,6 +117,45 @@ class TestReviewedMapping(TestCase):
             with self.assertRaises(adapter.ChartsAdapterError):
                 adapter.fetch_compatible_fred_series("CPIAUCSL", 14)
             read.assert_not_called()
+
+    def test_http_error_keeps_status_visible_and_identifies_client(self):
+        request_url = "https://grizzlybulls.com/api/v1/charts/series"
+        with patch.object(adapter.urllib.request, "build_opener") as build:
+            build.return_value.open.side_effect = urllib.error.HTTPError(
+                request_url, 403, "Forbidden", {}, None
+            )
+            with self.assertRaisesRegex(adapter.ChartsAdapterError, r"HTTP 403"):
+                adapter._read_public_json(request_url)
+            request = build.return_value.open.call_args.args[0]
+            self.assertEqual(request.get_header("Accept"), "application/json")
+            self.assertEqual(
+                request.get_header("User-agent"),
+                "GrizzlyBullsChartsExplorer-PythonExample/0.1"
+            )
+            self.assertEqual(build.return_value.open.call_args.kwargs["timeout"], 8)
+
+    def test_dns_tls_and_timeout_are_distinguishable_without_leaking_details(self):
+        cases = [
+            (urllib.error.URLError(socket.gaierror(-3, "PRIVATE_DNS_DETAIL")), "DNS"),
+            (urllib.error.URLError(ssl.SSLError("PRIVATE_TLS_DETAIL")), "TLS"),
+            (urllib.error.URLError(TimeoutError("PRIVATE_TIMEOUT_DETAIL")), "timeout"),
+        ]
+        for exc, category in cases:
+            with self.subTest(category=category):
+                with patch.object(adapter.urllib.request, "build_opener") as build:
+                    build.return_value.open.side_effect = exc
+                    with self.assertRaisesRegex(
+                        adapter.ChartsAdapterError, f"network error \\({category}\\)"
+                    ) as caught:
+                        adapter._read_public_json("https://grizzlybulls.com/api/v1/charts/series")
+                    self.assertNotIn("PRIVATE_", str(caught.exception))
+
+    def test_http_redirect_is_not_silently_followed(self):
+        self.assertIsNone(
+            adapter._NoRedirect().redirect_request(
+                None, None, 302, "Redirect", {}, "https://example.org"
+            )
+        )
 
 
 if __name__ == "__main__":
