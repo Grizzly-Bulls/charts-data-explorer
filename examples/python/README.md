@@ -36,6 +36,26 @@ The module returns descending observations in the same basic shape used by Macro
 
 This is a **shape illustration with a placeholder value**, not a real economic observation.
 
+## Live read troubleshooting
+
+The optional live command runs from the machine where you start the example; it does **not** use the NUC loopback path. Passing offline tests, or seeing an HTTP 200 on the NUC itself, does not prove that a public client can reach the same API through DNS, TLS and Cloudflare.
+
+The CLI reports bounded error categories:
+- `Charts API returned HTTP 403` (or another status): an HTTP rejection from the public path, potentially including an edge/WAF rule; do not bypass it with fake browser headers or silently switch to an unreviewed data source.
+- `Charts API network error (DNS)`, `(TLS)`, or `(timeout)`: check local host resolution, certificate trust, clock, proxy/network reachability or latency.
+- `Charts series identity or units do not match`: do not relax the contract to force conversion.
+
+To compare the exact public endpoint's HTTP status with curl, **without printing data bodies**:
+
+```bash
+URL='https://grizzlybulls.com/api/v1/charts/series/unemployment-rate/observations?order=desc&limit=3&offset=0'
+curl -sS --max-time 20 -o /dev/null \
+  -w 'HTTP %{http_code} / remote IP %{remote_ip} / content-type %{content_type} / total %{time_total}s\n' \
+  -H 'Accept: application/json' "$URL"
+```
+
+An HTTP success with curl but failure with Python points to a **client or edge treatment difference**; an identical rejection or network error points to a more general public-path issue. The Python example identifies itself transparently with a dedicated User-Agent. No external integration should be claimed until both the schema and live conversions are verified.
+
 ## Example opt-in integration (not applied upstream)
 
 For a MacroDashboard-style project, keep the existing `FREDFetcher` as the authoritative fallback. Place `macro_dashboard_adapter.py` on the Python import path (for instance, alongside `data_fetchers.py`) and call the following function **instead of** its current `fred.fetch_series(series_id, limit=limit)` inside the macro refresh loop:
